@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export function Hero2() {
   return (
     <section className="relative w-full bg-white">
       {/* Banner Image */}
-      <div className="relative w-full h-auto overflow-hidden" style={{ borderRadius: '0 50px 120px 0' }}>
+      <div className="relative w-full h-auto overflow-hidden" style={{ borderRadius: '0px 0 0 120px' }}>
         <Image
           src="/types/hero section 2.jpg"
           alt="Auto École Lahcen L'oranie"
@@ -62,9 +63,11 @@ export function Hero2() {
             </div>
 
             <div className="pt-4 md:pt-6">
-              <button className="px-8 md:px-12 py-3 md:py-4 bg-sky-500 text-white font-semibold text-base md:text-lg hover:bg-sky-600 transition-colors border-2 border-sky-500 rounded-lg">
-                التسجيل الآن
-              </button>
+              <Link href="/signup">
+                <button className="px-8 md:px-12 py-3 md:py-4 bg-sky-500 text-white font-semibold text-base md:text-lg hover:bg-sky-600 transition-colors border-2 border-sky-500 rounded-lg">
+                  التسجيل الآن
+                </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -251,6 +251,20 @@ export function Categories2() {
             </DrawerHeader>
             
             <div className="px-4 pb-4 space-y-6 bg-white overflow-y-auto flex-1">
+              {selectedCategory === "C" && (
+                <div className="w-full rounded-lg overflow-hidden">
+                  <iframe
+                    width="100%"
+                    height="200"
+                    src="https://www.youtube.com/embed/Ts3uwRAOiJw"
+                    title="Permis Catégorie C"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="rounded-lg"
+                    style={{ borderRadius: '8px' }}
+                  />
+                </div>
+              )}
               {details?.details && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">التفاصيل:</h3>

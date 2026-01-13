@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, Phone } from "lucide-react";
+import { Menu, Languages } from "lucide-react";
 
 export function Header2() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,7 +26,7 @@ export function Header2() {
       }`}
     >
       <div className="container mx-auto px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-20">
+        <div className="relative flex items-center justify-between h-[60px]">
           {/* Menu Icon - Left */}
           <button className="flex items-center justify-center w-10 h-10 text-gray-700 hover:text-gray-900 transition-colors z-10">
             <Menu className="w-6 h-6" />
@@ -44,9 +44,9 @@ export function Header2() {
             />
           </Link>
 
-          {/* Phone Icon - Right */}
+          {/* Languages Icon - Right */}
           <button className="flex items-center justify-center w-10 h-10 text-gray-700 hover:text-gray-900 transition-colors z-10">
-            <Phone className="w-6 h-6" />
+            <Languages className="w-6 h-6" />
           </button>
         </div>
       </div>

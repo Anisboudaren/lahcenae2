@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 import { Header2 } from "@/components/shared/Header2";
+import { Footer } from "@/components/shared/Footer";
 import { FormProvider } from "@/contexts/FormContext";
 import { WhatsAppBubble } from "@/components/shared/WhatsAppBubble";
 
@@ -41,6 +42,7 @@ export default function RootLayout({
         <FormProvider>
           <Header2 />
           {children}
+          <Footer />
           <WhatsAppBubble />
         </FormProvider>
       </body>

@@ -30,7 +30,7 @@ export function Certificate2() {
     >
       {/* Hero Image - Full Width */}
       <div className="relative mb-8 md:mb-10 -mx-6 md:-mx-12 lg:-mx-16 xl:-mx-20" style={{ width: 'calc(100% + 3rem)' }}>
-        <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden pr-6 md:pr-12 lg:pr-16 xl:pr-20" style={{ borderRadius: '0 0 80px 0' }}>
+        <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden pr-6 md:pr-12 lg:pr-16 xl:pr-20" style={{ borderRadius: '0 120px 120px 0' }}>
           <Image
             src="/certifciate/guy handing out the certifcate.png"
             alt="شهادة الكفاءة المهنية"

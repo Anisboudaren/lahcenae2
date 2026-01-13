@@ -97,12 +97,12 @@ export function InscriptionForm() {
   };
 
   return (
-    <SectionContainer id="inscription-form" className="bg-[#FEF9E7]">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-[#57534E]">
-          سجّل الآن واحجز مكانك
+    <SectionContainer id="inscription-form" className="bg-white">
+      <div className="text-right mb-12">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-gray-900">
+          <span className="text-sky-500">سجّل الآن</span> واحجز مكانك
         </h2>
-        <p className="text-lg md:text-xl text-[#78716C]">
+        <p className="text-lg md:text-xl text-gray-700">
           املأ النموذج وسنتصل بك في أقرب وقت
         </p>
       </div>
@@ -128,7 +128,7 @@ export function InscriptionForm() {
                   name="licenseType"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>نوع الرخصة المطلوبة *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">نوع الرخصة المطلوبة *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} dir="rtl">
                         <FormControl>
                           <SelectTrigger className="w-full text-right">
@@ -154,7 +154,7 @@ export function InscriptionForm() {
                   name="nationalId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>رقم بطاقة التعريف الوطنية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">رقم بطاقة التعريف الوطنية *</FormLabel>
                       <FormControl>
                         <Input placeholder="1234567890123456" {...field} />
                       </FormControl>
@@ -169,7 +169,7 @@ export function InscriptionForm() {
                   name="nameAr"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الاسم بالعربية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">الاسم بالعربية *</FormLabel>
                       <FormControl>
                         <Input placeholder="محمد" {...field} />
                       </FormControl>
@@ -184,7 +184,7 @@ export function InscriptionForm() {
                   name="surnameAr"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>اللقب بالعربية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">اللقب بالعربية *</FormLabel>
                       <FormControl>
                         <Input placeholder="بن علي" {...field} />
                       </FormControl>
@@ -199,7 +199,7 @@ export function InscriptionForm() {
                   name="nameFr"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الاسم بالفرنسية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">الاسم بالفرنسية *</FormLabel>
                       <FormControl>
                         <Input placeholder="Mohamed" {...field} />
                       </FormControl>
@@ -214,7 +214,7 @@ export function InscriptionForm() {
                   name="surnameFr"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>اللقب بالفرنسية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">اللقب بالفرنسية *</FormLabel>
                       <FormControl>
                         <Input placeholder="Ben Ali" {...field} />
                       </FormControl>
@@ -229,7 +229,7 @@ export function InscriptionForm() {
                   name="gender"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>الجنس *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">الجنس *</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -257,7 +257,7 @@ export function InscriptionForm() {
                   name="birthDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>تاريخ الميلاد *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">تاريخ الميلاد *</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -272,7 +272,7 @@ export function InscriptionForm() {
                   name="birthWilaya"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>مكان الميلاد - الولاية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">مكان الميلاد - الولاية *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} dir="rtl">
                         <FormControl>
                           <SelectTrigger className="w-full text-right">
@@ -298,7 +298,7 @@ export function InscriptionForm() {
                   name="birthMunicipality"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>مكان الميلاد - البلدية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">مكان الميلاد - البلدية *</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -329,7 +329,7 @@ export function InscriptionForm() {
                   name="fatherName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>اسم الأب *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">اسم الأب *</FormLabel>
                       <FormControl>
                         <Input placeholder="علي" {...field} />
                       </FormControl>
@@ -344,7 +344,7 @@ export function InscriptionForm() {
                   name="motherName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>اسم الأم *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">اسم الأم *</FormLabel>
                       <FormControl>
                         <Input placeholder="فاطمة" {...field} />
                       </FormControl>
@@ -359,7 +359,7 @@ export function InscriptionForm() {
                   name="motherSurname"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>لقب الأم *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">لقب الأم *</FormLabel>
                       <FormControl>
                         <Input placeholder="بن أحمد" {...field} />
                       </FormControl>
@@ -374,7 +374,7 @@ export function InscriptionForm() {
                   name="address"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>العنوان *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">العنوان *</FormLabel>
                       <FormControl>
                         <Input placeholder="شارع... رقم..." {...field} />
                       </FormControl>
@@ -389,7 +389,7 @@ export function InscriptionForm() {
                   name="maritalStatus"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الحالة المدنية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">الحالة المدنية *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} dir="rtl">
                         <FormControl>
                           <SelectTrigger className="w-full text-right">
@@ -415,7 +415,7 @@ export function InscriptionForm() {
                   name="phone1"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>رقم الهاتف 1 *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">رقم الهاتف 1 *</FormLabel>
                       <FormControl>
                         <Input placeholder="0550123456" {...field} />
                       </FormControl>
@@ -430,7 +430,7 @@ export function InscriptionForm() {
                   name="phone2"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>رقم الهاتف 2 (اختياري)</FormLabel>
+                      <FormLabel className="text-base md:text-lg">رقم الهاتف 2 (اختياري)</FormLabel>
                       <FormControl>
                         <Input placeholder="0770123456" {...field} />
                       </FormControl>
@@ -445,7 +445,7 @@ export function InscriptionForm() {
                   name="originalNationality"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الجنسية الأصلية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">الجنسية الأصلية *</FormLabel>
                       <FormControl>
                         <Input placeholder="جزائري" {...field} />
                       </FormControl>
@@ -460,7 +460,7 @@ export function InscriptionForm() {
                   name="currentNationality"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الجنسية الحالية *</FormLabel>
+                      <FormLabel className="text-base md:text-lg">الجنسية الحالية *</FormLabel>
                       <FormControl>
                         <Input placeholder="جزائري" {...field} />
                       </FormControl>
@@ -473,7 +473,7 @@ export function InscriptionForm() {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full bg-[#DC2626] hover:bg-[#B91C1C] text-white py-6 text-lg"
+                className="w-full bg-sky-500 hover:bg-sky-600 text-white py-6 text-lg"
               >
                 إرسال الطلب
               </Button>
@@ -483,9 +483,9 @@ export function InscriptionForm() {
 
         {/* Summary Card */}
         <div className="lg:sticky lg:top-24 h-fit">
-          <Card className="bg-white border-2 border-[#FDE68A] shadow-lg">
+          <Card className="bg-white border-2 border-sky-100 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-[#57534E]">
+              <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900">
                 لماذا التسجيل معنا؟
               </CardTitle>
             </CardHeader>
@@ -500,34 +500,34 @@ export function InscriptionForm() {
                   "متابعة شخصية لكل طالب",
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-[#DC2626] mt-0.5 shrink-0" />
-                    <span className="text-[#78716C]">{benefit}</span>
+                    <CheckCircle2 className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
+                    <span className="text-gray-700">{benefit}</span>
                   </div>
                 ))}
               </div>
 
               <div className="pt-6 border-t border-gray-200 space-y-4">
                 <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-[#DC2626] mt-0.5 shrink-0" />
+                  <Phone className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-semibold text-[#57534E]">اتصل بنا</p>
-                    <p className="text-[#78716C]">0550123456</p>
-                    <p className="text-[#78716C]">0770123456</p>
+                    <p className="font-semibold text-gray-900">اتصل بنا</p>
+                    <p className="text-gray-700">0550496953</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-[#DC2626] mt-0.5 shrink-0" />
+                  <MapPin className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-semibold text-[#57534E]">العنوان</p>
-                    <p className="text-[#78716C]">وهران، الجزائر</p>
+                    <p className="font-semibold text-gray-900">مواقعنا</p>
+                    <p className="text-gray-700">وهران، الجزائر</p>
+                    <p className="text-gray-700">غليزان، الجزائر</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-[#DC2626] mt-0.5 shrink-0" />
+                  <Clock className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-semibold text-[#57534E]">ساعات العمل</p>
-                    <p className="text-[#78716C]">من السبت إلى الخميس</p>
-                    <p className="text-[#78716C]">8:00 - 18:00</p>
+                    <p className="font-semibold text-gray-900">ساعات العمل</p>
+                    <p className="text-gray-700">من السبت إلى الخميس</p>
+                    <p className="text-gray-700">8:00 - 18:00</p>
                   </div>
                 </div>
               </div>

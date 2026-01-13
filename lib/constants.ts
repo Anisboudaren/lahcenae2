@@ -8,39 +8,32 @@ export interface LicenseType {
 
 export const licenseTypes: LicenseType[] = [
   {
+    code: "A",
+    nameAr: "رخصة A",
+    nameFr: "Permis A",
+    description: "الدراجات النارية من جميع الأحجام",
+    imagePath: "/types/A.jpg",
+  },
+  {
     code: "A1",
     nameAr: "رخصة A1",
     nameFr: "Permis A1",
     description: "الدراجات النارية الخفيفة من 50 إلى 125 سم مكعب (مثل الكوكسي والاستايت). ملاحظة: حاملي رخصة B يمكنهم قيادتها قانونياً دون رخصة A1 منفصلة.",
-    imagePath: "/types/A1.png",
-  },
-  {
-    code: "A2",
-    nameAr: "رخصة A2",
-    nameFr: "Permis A2",
-    description: "الدراجات النارية من الصنف ب (حجم الاسطوانة من 80 إلى 400 سم مكعب) والصنف ج (أكثر من 400 سم مكعب)",
-    imagePath: "/types/A2.png",
+    imagePath: "/types/A1.jpg",
   },
   {
     code: "B",
     nameAr: "رخصة B",
     nameFr: "Permis B",
     description: "السيارات الأقل من 10 مقاعد وزنها الاجمالي مع الحمولة أقل من 3.5 طن",
-    imagePath: "/types/B.png",
+    imagePath: "/types/B.jpg",
   },
   {
-    code: "C1",
-    nameAr: "رخصة C1",
-    nameFr: "Permis C1",
-    description: "تسمح بقيادة المركبات المنفردة المخصصة لنقل البضائع التي يكون وزنها بين 3.5 طن و 19 طن",
-    imagePath: "/types/C1.png",
-  },
-  {
-    code: "C2",
-    nameAr: "رخصة C2",
-    nameFr: "Permis C2",
-    description: "مركبات نقل البضائع التي يتجاوز وزنها 19 طن (منفردة) أو 12.5 طن (مقطورة أو متمفصلة)",
-    imagePath: "/types/C2.png",
+    code: "C",
+    nameAr: "رخصة C",
+    nameFr: "Permis C",
+    description: "مركبات نقل البضائع التي يتجاوز وزنها 3.5 طن",
+    imagePath: "/types/C.jpg",
   },
   {
     code: "D",
