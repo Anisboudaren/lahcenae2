@@ -136,7 +136,7 @@ export function MultiStepForm({ open, onOpenChange }: MultiStepFormProps) {
     }
   };
 
-  const onSubmit = (data: InscriptionFormData) => {
+  const onSubmit = async (data: InscriptionFormData) => {
     console.log("Form data:", data);
     // Save to admin data storage
     try {
@@ -149,15 +149,16 @@ export function MultiStepForm({ open, onOpenChange }: MultiStepFormProps) {
         const err = await res.json();
         throw new Error(err.error || "Failed to submit");
       }
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        onOpenChange(false);
+        form.reset();
+      }, 3000);
     } catch (error) {
       console.error("Error saving form submission:", error);
+      // Optionally show error message to user
     }
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      onOpenChange(false);
-      form.reset();
-    }, 3000);
   };
 
   return (
