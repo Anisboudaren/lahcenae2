@@ -56,11 +56,11 @@ export default function ArticlePage() {
         router.push("/articles");
         return;
       }
-      const data: DbArticle = await res.json();
-      if (data.error) {
-        throw new Error(data.error);
+      const data = await res.json();
+      if (!res.ok || (data as { error?: string }).error) {
+        throw new Error((data as { error?: string }).error || "فشل تحميل المقال");
       }
-      setArticle(mapDbToArticle(data));
+      setArticle(mapDbToArticle(data as DbArticle));
     } catch (e) {
       const err = e instanceof Error ? e.message : "فشل تحميل المقال";
       console.error("Failed to fetch article:", e);
