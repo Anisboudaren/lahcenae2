@@ -88,7 +88,7 @@ export function InscriptionForm() {
     }
   }, [form.watch("birthWilaya"), form]);
 
-  const onSubmit = (data: InscriptionFormData) => {
+  const onSubmit = async (data: InscriptionFormData) => {
     console.log("Form data:", data);
     // Save to admin data storage
     try {
@@ -101,12 +101,13 @@ export function InscriptionForm() {
         const err = await res.json();
         throw new Error(err.error || "Failed to submit");
       }
+      setShowSuccess(true);
+      form.reset();
+      setTimeout(() => setShowSuccess(false), 5000);
     } catch (error) {
       console.error("Error saving form submission:", error);
+      // Optionally show error message to user
     }
-    setShowSuccess(true);
-    form.reset();
-    setTimeout(() => setShowSuccess(false), 5000);
   };
 
   return (
