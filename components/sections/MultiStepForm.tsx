@@ -34,7 +34,6 @@ import { motion } from "framer-motion";
 import {
   licenseTypes,
   algerianWilayas,
-  getMunicipalities,
   maritalStatusOptions,
   genderOptions,
 } from "@/lib/constants";
@@ -51,7 +50,6 @@ interface MultiStepFormProps {
 export function MultiStepForm({ open, onOpenChange }: MultiStepFormProps) {
   const [step, setStep] = useState(1);
   const [selectedWilaya, setSelectedWilaya] = useState<string>("");
-  const [selectedMunicipalities, setSelectedMunicipalities] = useState<string[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const totalSteps = 5;
 
@@ -89,14 +87,11 @@ export function MultiStepForm({ open, onOpenChange }: MultiStepFormProps) {
     }
   }, [form]);
 
-  // Update municipalities when wilaya changes
+  // Update wilaya state when it changes (for display purposes)
   useEffect(() => {
     const wilaya = form.watch("birthWilaya");
     if (wilaya) {
       setSelectedWilaya(wilaya);
-      const municipalities = getMunicipalities(wilaya);
-      setSelectedMunicipalities(municipalities);
-      form.setValue("birthMunicipality", "");
     }
   }, [form.watch("birthWilaya"), form]);
 
@@ -402,8 +397,7 @@ export function MultiStepForm({ open, onOpenChange }: MultiStepFormProps) {
                         <FormLabel className="text-black font-semibold">مكان الميلاد - البلدية *</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={selectedWilaya ? "أدخل اسم البلدية" : "اختر الولاية أولاً"}
-                            disabled={!selectedWilaya}
+                            placeholder="أدخل اسم البلدية"
                             {...field}
                             className="text-black"
                           />

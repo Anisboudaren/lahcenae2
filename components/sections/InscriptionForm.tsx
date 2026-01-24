@@ -28,7 +28,6 @@ import { CheckCircle2, Phone, MapPin, Clock } from "lucide-react";
 import {
   licenseTypes,
   algerianWilayas,
-  getMunicipalities,
   maritalStatusOptions,
   genderOptions,
 } from "@/lib/constants";
@@ -40,7 +39,6 @@ import {
 export function InscriptionForm() {
   const [selectedWilaya, setSelectedWilaya] = useState<string>("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [selectedMunicipalities, setSelectedMunicipalities] = useState<string[]>([]);
 
   const form = useForm<InscriptionFormData>({
     resolver: zodResolver(inscriptionFormSchema),
@@ -76,15 +74,11 @@ export function InscriptionForm() {
     }
   }, [form]);
 
-  // Update municipalities when wilaya changes
+  // Update wilaya state when it changes (for display purposes)
   useEffect(() => {
     const wilaya = form.watch("birthWilaya");
     if (wilaya) {
       setSelectedWilaya(wilaya);
-      const municipalities = getMunicipalities(wilaya);
-      setSelectedMunicipalities(municipalities);
-      // Reset municipality when wilaya changes
-      form.setValue("birthMunicipality", "");
     }
   }, [form.watch("birthWilaya"), form]);
 
@@ -313,25 +307,9 @@ export function InscriptionForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-base md:text-lg">مكان الميلاد - البلدية *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={!selectedWilaya}
-                        dir="rtl"
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full text-right">
-                            <SelectValue placeholder={selectedWilaya ? "اختر البلدية" : "اختر الولاية أولاً"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {selectedMunicipalities.map((municipality) => (
-                            <SelectItem key={municipality} value={municipality}>
-                              {municipality}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input placeholder="أدخل اسم البلدية" {...field} dir="rtl" />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
