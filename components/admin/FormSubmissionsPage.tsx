@@ -25,15 +25,36 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Search, Trash2, Eye } from "lucide-react";
-import { getFormSubmissions, deleteFormSubmission, type FormSubmission } from "@/lib/admin-data";
+import type { FormSubmission } from "@/lib/admin-data";
+import { mapDbToFormSubmission, type DbFormSubmission } from "@/lib/db-mappers";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useEffect } from "react";
 
 export function FormSubmissionsPage() {
-  const [submissions, setSubmissions] = useState<FormSubmission[]>(getFormSubmissions());
+  const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterLicense, setFilterLicense] = useState<string>("all");
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, []);
+
+  async function fetchSubmissions() {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/form-submissions");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data: DbFormSubmission[] = await res.json();
+      setSubmissions(data.map(mapDbToFormSubmission));
+    } catch (e) {
+      console.error("Failed to fetch submissions:", e);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredSubmissions = useMemo(() => {
     return submissions.filter((sub) => {
@@ -49,9 +70,15 @@ export function FormSubmissionsPage() {
     });
   }, [submissions, searchTerm, filterLicense]);
 
-  const handleDelete = (id: string) => {
-    deleteFormSubmission(id);
-    setSubmissions(getFormSubmissions());
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/form-submissions?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      await fetchSubmissions();
+    } catch (e) {
+      console.error("Failed to delete:", e);
+      alert("فشل حذف الاستمارة");
+    }
   };
 
   const handleView = (submission: FormSubmission) => {

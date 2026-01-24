@@ -24,19 +24,31 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, Edit, Trash2, Image as ImageIcon, Video } from "lucide-react";
-import {
-  getArticles,
-  deleteArticle,
-  type Article,
-} from "@/lib/admin-data";
+import type { Article } from "@/lib/admin-data";
+import { mapDbToArticle, type DbArticle } from "@/lib/db-mappers";
 
 export function ArticlesManagementPage() {
   const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setArticles(getArticles());
+    fetchArticles();
   }, []);
+
+  async function fetchArticles() {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/articles");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data: DbArticle[] = await res.json();
+      setArticles(data.map(mapDbToArticle));
+    } catch (e) {
+      console.error("Failed to fetch articles:", e);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleEdit = (article: Article) => {
     router.push(`/admin/articles/${article.id}/edit`);
@@ -46,9 +58,15 @@ export function ArticlesManagementPage() {
     router.push("/admin/articles/new/edit");
   };
 
-  const handleDelete = (id: string) => {
-    deleteArticle(id);
-    setArticles(getArticles());
+  const handleDelete = async (slug: string) => {
+    try {
+      const res = await fetch(`/api/admin/articles?slug=${slug}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      await fetchArticles();
+    } catch (e) {
+      console.error("Failed to delete:", e);
+      alert("فشل حذف المقال");
+    }
   };
 
   return (
@@ -85,7 +103,13 @@ export function ArticlesManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {articles.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-[#78716C]">
+                      جاري التحميل...
+                    </TableCell>
+                  </TableRow>
+                ) : articles.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-[#78716C]">
                       لا توجد مقالات
@@ -148,7 +172,7 @@ export function ArticlesManagementPage() {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDelete(article.id)}
+                                  onClick={() => handleDelete(article.slug)}
                                   className="bg-[#DC2626] hover:bg-[#B91C1C]"
                                 >
                                   حذف

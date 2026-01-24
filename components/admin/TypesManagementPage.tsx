@@ -25,19 +25,58 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Image as ImageIcon, Video } from "lucide-react";
-import {
-  getLicenseTypes,
-  deleteLicenseType,
-  type LicenseType,
-} from "@/lib/admin-data";
+import type { LicenseType } from "@/lib/admin-data";
+
+type DbLicenseType = {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_fr: string;
+  image_path: string;
+  video_link: string | null;
+  [key: string]: any;
+};
+
+function mapDbToLicenseType(db: DbLicenseType): LicenseType {
+  return {
+    id: db.id,
+    code: db.code,
+    nameAr: db.name_ar,
+    nameFr: db.name_fr,
+    description: db.description || "",
+    imagePath: db.image_path,
+    details: Array.isArray(db.details) ? db.details : [],
+    note: db.note || undefined,
+    offers: Array.isArray(db.offers) ? db.offers : [],
+    callToAction: db.call_to_action || "",
+    videoLink: db.video_link || undefined,
+    extraImages: Array.isArray(db.extra_images) ? db.extra_images : [],
+    text: db.text || undefined,
+  };
+}
 
 export function TypesManagementPage() {
   const router = useRouter();
   const [types, setTypes] = useState<LicenseType[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTypes(getLicenseTypes());
+    fetchTypes();
   }, []);
+
+  async function fetchTypes() {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/license-types");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data: DbLicenseType[] = await res.json();
+      setTypes(data.map(mapDbToLicenseType));
+    } catch (e) {
+      console.error("Failed to fetch license types:", e);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleEdit = (type: LicenseType) => {
     router.push(`/admin/types/${type.id}/edit`);
@@ -47,9 +86,15 @@ export function TypesManagementPage() {
     router.push("/admin/types/new/edit");
   };
 
-  const handleDelete = (id: string) => {
-    deleteLicenseType(id);
-    setTypes(getLicenseTypes());
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/license-types?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      await fetchTypes();
+    } catch (e) {
+      console.error("Failed to delete:", e);
+      alert("فشل حذف الصنف");
+    }
   };
 
   return (
@@ -81,7 +126,13 @@ export function TypesManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {types.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      جاري التحميل...
+                    </TableCell>
+                  </TableRow>
+                ) : types.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                       لا توجد أصناف

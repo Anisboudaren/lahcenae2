@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Drawer,
   DrawerClose,
@@ -12,172 +12,67 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 import { useFormContext } from "@/contexts/FormContext";
+import { mapDbToLicenseType, type DbLicenseType } from "@/lib/db-mappers";
+import type { LicenseType } from "@/lib/admin-data";
 
-const categories = [
-  {
-    code: "A",
-    nameAr: "رخصة A",
-    nameFr: "Permis A",
-    imagePath: "/types/categorie A.jpg",
-  },
-  {
-    code: "A1",
-    nameAr: "رخصة A1",
-    nameFr: "Permis A1",
-    imagePath: "/types/categorie A1.jpg",
-  },
-  {
-    code: "B",
-    nameAr: "رخصة B",
-    nameFr: "Permis B",
-    imagePath: "/types/categorie b.jpg",
-  },
-  {
-    code: "C",
-    nameAr: "رخصة C",
-    nameFr: "Permis C",
-    imagePath: "/types/categorie c.jpg",
-  },
-  {
-    code: "C1",
-    nameAr: "رخصة C1",
-    nameFr: "Permis C1",
-    imagePath: "/types/categorie c1.jpg",
-  },
-  {
-    code: "D",
-    nameAr: "رخصة D",
-    nameFr: "Permis D",
-    imagePath: "/types/categorie d.jpg",
-  },
-  {
-    code: "E",
-    nameAr: "رخصة E",
-    nameFr: "Permis E",
-    imagePath: "/types/categorie e.jpg",
-  },
-];
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
 
-const licenseDetails: Record<string, {
-  description: string;
-  details: string[];
-  note?: string;
-  offers: string[];
-  callToAction: string;
-}> = {
-  A: {
-    description: "رخصة A2: الدراجات النارية من الصنف ب (حجم الاسطوانة من 80 إلى 400 سم مكعب) والصنف ج (أكثر من 400 سم مكعب).",
-    details: [
-      "الدراجات النارية من الصنف ب: حجم الاسطوانة من 80 إلى 400 سم مكعب",
-      "الدراجات النارية من الصنف ج: أكثر من 400 سم مكعب",
-      "تسمح بقيادة جميع أنواع الدراجات النارية بدون قيود على حجم المحرك"
-    ],
-    offers: [
-      "مدرّبون محترفون ذوو خبرة في قيادة الدراجات النارية",
-      "تجهيزات عصرية ودراجات نارية مخصّصة للتدريب",
-      "مرافقة نفسية لزيادة ثقتك بنفسك على الطريق",
-      "برنامج تدريبي شامل يتضمن التدريب النظري والعملي"
-    ],
-    callToAction: "سجّل الآن، وابدأ رحلتك معنا لتحصل على رخصة قيادة الدراجات النارية من الصنف A2"
-  },
-  A1: {
-    description: "رخصة A1: الدراجات النارية من الصنف أ (حجم الاسطوانة من 50 إلى 80 سنتمتر مكعب) والدراجات الثلاثية والرباعية العجلات (حجم الاسطوانة يساوي أو يقل عن 125 سم مكعب).",
-    details: [
-      "الدراجات النارية من الصنف أ: حجم الاسطوانة من 50 إلى 80 سم مكعب",
-      "الدراجات الثلاثية والرباعية العجلات: حجم الاسطوانة يساوي أو يقل عن 125 سم مكعب",
-      "دراجات نارية خفيفة (Mobylettes, Scooters) مثل الكوكسي والاستايت"
-    ],
-    note: "ملاحظة مهمة: رخص السيارات (الصنف B) أصبحت تخول لحاملها قانونيًا قيادة الدراجات النارية من الصنف A1 دون الحاجة لرخصة منفصلة، وفقًا لتحديثات قانون المرور في الجزائر.",
-    offers: [
-      "مدرّبون محترفون ذوو خبرة في قيادة الدراجات النارية الخفيفة",
-      "تجهيزات عصرية ودراجات خفيفة مخصّصة للتدريب",
-      "مرافقة نفسية لزيادة ثقتك بنفسك على الطريق",
-      "برنامج تدريبي متكامل مناسب للمبتدئين"
-    ],
-    callToAction: "سجّل الآن، وابدأ رحلتك معنا لتحصل على رخصة قيادة الدراجات النارية الخفيفة"
-  },
-  B: {
-    description: "رخصة B: السيارات الأقل من 10 مقاعد وزنها الاجمالي مع الحمولة أقل من 3.5 طن.",
-    details: [
-      "السيارات الأقل من 10 مقاعد",
-      "الوزن الإجمالي مع الحمولة أقل من 3.5 طن",
-      "أكثر رخص السياقة شيوعًا"
-    ],
-    note: "ملاحظة: حاملي رخصة B يمكنهم قيادة الدراجات النارية من الصنف A1 (حتى 125 سم مكعب) دون رخصة منفصلة.",
-    offers: [
-      "مدرّبون محترفون ذوو خبرة واسعة في تعليم قيادة السيارات",
-      "تجهيزات عصرية وسيارات مخصّصة للتدريب",
-      "مرافقة نفسية لزيادة ثقتك بنفسك خلف عجلة القيادة",
-      "برنامج تدريبي شامل مع 20 ساعة تدريب عملي"
-    ],
-    callToAction: "سجّل الآن، وابدأ رحلتك معنا لتحصل على رخصة قيادة السيارات"
-  },
-  C: {
-    description: "رخصة C2: تسمح بقيادة مركبات نقل البضائع التي يتجاوز وزنها مع الحمولة 19 طن (مركبة منفردة) أو التي يتجاوز وزنها 12.5 طن (مركبة جارة لمجموعة مركبات أو مركبة متمفصلة).",
-    details: [
-      "مركبات نقل البضائع التي يتجاوز وزنها مع الحمولة 19 طن (مركبة منفردة)",
-      "مركبات نقل البضائع التي يتجاوز وزنها 12.5 طن (مركبة جارة لمجموعة مركبات أو مركبة متمفصلة)"
-    ],
-    offers: [
-      "مدرّبون محترفون ذوو خبرة في قيادة الشاحنات الثقيلة",
-      "تجهيزات عصرية ومركبات نقل مخصّصة للتدريب",
-      "مرافقة نفسية لزيادة ثقتك بنفسك في القيادة التجارية",
-      "برنامج تدريبي متقدم مع 30 ساعة تدريب عملي"
-    ],
-    callToAction: "سجّل الآن، وابدأ رحلتك معنا لتحصل على رخصة قيادة مركبات نقل البضائع الثقيلة"
-  },
-  C1: {
-    description: "رخصة C1: تسمح بقيادة المركبات المنفردة المخصصة لنقل البضائع التي يكون وزنها بين 3.5 طن و 19 طن.",
-    details: [
-      "المركبات المنفردة المخصصة لنقل البضائع",
-      "الوزن بين 3.5 طن و 19 طن",
-      "تستخدم في النقل التجاري للمسافات المتوسطة"
-    ],
-    offers: [
-      "مدرّبون محترفون ذوو خبرة في قيادة مركبات النقل المتوسطة",
-      "تجهيزات عصرية ومركبات نقل مخصّصة للتدريب",
-      "مرافقة نفسية لزيادة ثقتك بنفسك في القيادة التجارية",
-      "برنامج تدريبي شامل مع 25 ساعة تدريب عملي"
-    ],
-    callToAction: "سجّل الآن، وابدأ رحلتك معنا لتحصل على رخصة قيادة مركبات نقل البضائع المتوسطة"
-  },
-  D: {
-    description: "رخصة D: سيارات النقل العام للأشخاص (أكثر من 9 مقاعد)، أو التي يتجاوز وزنها الإجمالي المرخص به مع الحمولة 3.5 طن.",
-    details: [
-      "سيارات النقل العام للأشخاص (أكثر من 9 مقاعد)",
-      "المركبات التي يتجاوز وزنها الإجمالي المرخص به مع الحمولة 3.5 طن",
-      "تستخدم في النقل الجماعي للأشخاص"
-    ],
-    offers: [
-      "مدرّبون محترفون ذوو خبرة في قيادة مركبات النقل الجماعي",
-      "تجهيزات عصرية ومركبات نقل عام مخصّصة للتدريب",
-      "مرافقة نفسية لزيادة ثقتك بنفسك في النقل الجماعي",
-      "برنامج تدريبي متقدم مع 40 ساعة تدريب عملي"
-    ],
-    callToAction: "سجّل الآن، وابدأ رحلتك معنا لتحصل على رخصة قيادة مركبات النقل العام للأشخاص"
-  },
-  E: {
-    description: "رخصة E: السيارات من الصنف 'ب - ج - د' تجر مقطورة وزنها أكبر من 750 كلغ.",
-    details: [
-      "السيارات من الصنف ب التي تجر مقطورة وزنها أكبر من 750 كلغ",
-      "السيارات من الصنف ج التي تجر مقطورة وزنها أكبر من 750 كلغ",
-      "السيارات من الصنف د التي تجر مقطورة وزنها أكبر من 750 كلغ"
-    ],
-    offers: [
-      "مدرّبون محترفون ذوو خبرة في قيادة المركبات مع المقطورات",
-      "تجهيزات عصرية ومركبات مع مقطورات مخصّصة للتدريب",
-      "مرافقة نفسية لزيادة ثقتك بنفسك في القيادة المعقدة",
-      "برنامج تدريبي متخصص مع 15 ساعة تدريب عملي"
-    ],
-    callToAction: "سجّل الآن، وابدأ رحلتك معنا لتحصل على رخصة قيادة المركبات مع المقطورات"
-  },
-};
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Response> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return res;
+      if (i < retries - 1) {
+        await sleep(RETRY_DELAY_MS * (i + 1));
+        continue;
+      }
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    } catch (e) {
+      if (i === retries - 1) throw e;
+      await sleep(RETRY_DELAY_MS * (i + 1));
+    }
+  }
+  throw new Error("Failed to fetch after retries");
+}
 
 export function Categories2() {
+  const [categories, setCategories] = useState<LicenseType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { openForm } = useFormContext();
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  async function fetchCategories() {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetchWithRetry("/api/license-types");
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setCategories((data as DbLicenseType[]).map(mapDbToLicenseType));
+    } catch (e) {
+      const err = e instanceof Error ? e.message : "فشل تحميل أصناف الرخص";
+      console.error("Failed to fetch license types:", e);
+      setError(err);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleShowDetails = (code: string) => {
     setSelectedCategory(code);
@@ -193,7 +88,6 @@ export function Categories2() {
   };
 
   const category = selectedCategory ? categories.find(c => c.code === selectedCategory) : null;
-  const details = selectedCategory ? licenseDetails[selectedCategory] : null;
   return (
     <section id="categories" className="relative w-full bg-white py-12 md:py-16 lg:py-20 px-6 md:px-12 lg:px-16 xl:px-20">
       <div className="container mx-auto max-w-7xl">
@@ -207,21 +101,40 @@ export function Categories2() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:gap-6">
-          {categories.map((category, index) => (
+          {loading && categories.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">جاري التحميل...</div>
+          ) : error && categories.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={fetchCategories} className="bg-sky-500 hover:bg-sky-600 text-white">
+                <RefreshCw className="w-4 h-4 ml-2" />
+                إعادة المحاولة
+              </Button>
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">لا توجد أصناف متاحة</div>
+          ) : (
+            categories.map((category, index) => (
             <div
               key={category.code}
               onClick={() => handleShowDetails(category.code)}
               className="relative bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group overflow-hidden active:scale-[0.98] rounded-lg"
             >
               <div className="relative w-full min-h-[300px] bg-gray-50">
-                <Image
-                  src={category.imagePath}
-                  alt={category.nameAr}
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                  priority={index < 4}
-                />
+                {category.imagePath ? (
+                  <Image
+                    src={category.imagePath}
+                    alt={category.nameAr}
+                    width={1200}
+                    height={800}
+                    className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                    priority={index < 4}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <span className="text-gray-400">لا توجد صورة</span>
+                  </div>
+                )}
               </div>
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
               <button
@@ -234,7 +147,8 @@ export function Categories2() {
                 عرض التفاصيل
               </button>
             </div>
-          ))}
+          ))
+          )}
         </div>
       </div>
 
@@ -246,18 +160,18 @@ export function Categories2() {
                 {category?.nameAr} - {category?.nameFr}
               </DrawerTitle>
               <DrawerDescription className="text-base text-gray-700 leading-relaxed">
-                {details?.description}
+                {category?.description}
               </DrawerDescription>
             </DrawerHeader>
             
             <div className="px-4 pb-4 space-y-6 bg-white overflow-y-auto flex-1">
-              {selectedCategory === "C" && (
+              {category?.videoLink && (
                 <div className="w-full rounded-lg overflow-hidden">
                   <iframe
                     width="100%"
                     height="200"
-                    src="https://www.youtube.com/embed/Ts3uwRAOiJw"
-                    title="Permis Catégorie C"
+                    src={category.videoLink}
+                    title={category.nameFr}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="rounded-lg"
@@ -265,11 +179,11 @@ export function Categories2() {
                   />
                 </div>
               )}
-              {details?.details && (
+              {category?.details && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">التفاصيل:</h3>
                   <ul className="space-y-3">
-                    {details.details.map((detail, index) => (
+                    {category.details.map((detail, index) => (
                       <li key={index} className="flex items-start gap-3 text-gray-700">
                         <span className="text-sky-500 mt-1 font-bold">•</span>
                         <span className="flex-1 leading-relaxed">{detail}</span>
@@ -279,21 +193,21 @@ export function Categories2() {
                 </div>
               )}
 
-              {details?.note && (
+              {category?.note && (
                 <div className="pt-4 border-t border-gray-200">
                   <div className="bg-sky-50 border-r-4 border-sky-500 p-4 rounded-lg">
                     <p className="text-base text-gray-800 leading-relaxed font-medium">
-                      {details.note}
+                      {category.note}
                     </p>
                   </div>
                 </div>
               )}
 
-              {details?.offers && (
+              {category?.offers && (
                 <div className="pt-4 border-t border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">ما نقدمه لك:</h3>
                   <ul className="space-y-3">
-                    {details.offers.map((offer, index) => (
+                    {category.offers.map((offer, index) => (
                       <li key={index} className="flex items-start gap-3 text-gray-700">
                         <span className="text-sky-500 mt-1 font-bold">•</span>
                         <span className="flex-1 leading-relaxed">{offer}</span>
@@ -303,10 +217,10 @@ export function Categories2() {
                 </div>
               )}
 
-              {details?.callToAction && (
+              {category?.callToAction && (
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-base text-gray-800 leading-relaxed font-semibold">
-                    {details.callToAction}
+                    {category.callToAction}
                   </p>
                 </div>
               )}

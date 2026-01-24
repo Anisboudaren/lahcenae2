@@ -25,6 +25,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "مدرسة لحسن لتعليم السياقة - الوهرانية",
   description: "طريقك الآمن نحو رخصة القيادة - مدرسة معتمدة رسمياً لتعليم السياقة في وهران",
+  icons: {
+    icon: "/images/logo auto echole lahcen.png",
+    shortcut: "/images/logo auto echole lahcen.png",
+    apple: "/images/logo auto echole lahcen.png",
+  },
 };
 
 export default function RootLayout({

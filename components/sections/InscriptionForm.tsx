@@ -92,8 +92,15 @@ export function InscriptionForm() {
     console.log("Form data:", data);
     // Save to admin data storage
     try {
-      const { saveFormSubmission } = require("@/lib/admin-data");
-      saveFormSubmission(data);
+      const res = await fetch("/api/form-submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to submit");
+      }
     } catch (error) {
       console.error("Error saving form submission:", error);
     }

@@ -9,11 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Save, Image as ImageIcon } from "lucide-react";
-import {
-  getSettings,
-  saveSettings,
-  type SiteSettings,
-} from "@/lib/admin-data";
+import type { SiteSettings } from "@/lib/admin-data";
+import { mapDbToSiteSettings, type DbSiteSettings } from "@/lib/db-mappers";
 import { inscriptionFormSchema } from "@/lib/form-validation";
 import { z } from "zod";
 
@@ -42,20 +39,56 @@ const formFieldLabels: Record<FormFieldKey, { ar: string; fr: string }> = {
 };
 
 export function SettingsPage() {
-  const [settings, setSettings] = useState<SiteSettings>(getSettings());
+  const [settings, setSettings] = useState<SiteSettings>({
+    logo: "",
+    name: "",
+    description: "",
+    formElements: {},
+  });
   const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setSettings(getSettings());
+    fetchSettings();
   }, []);
 
-  const handleSave = () => {
-    setIsSaving(true);
-    saveSettings(settings);
-    setTimeout(() => {
-      setIsSaving(false);
+  async function fetchSettings() {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/settings");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data: DbSiteSettings | null = await res.json();
+      if (data) {
+        setSettings(mapDbToSiteSettings(data));
+      }
+    } catch (e) {
+      console.error("Failed to fetch settings:", e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          logo: settings.logo,
+          name: settings.name,
+          description: settings.description,
+          form_elements: settings.formElements,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
       alert("تم حفظ الإعدادات بنجاح");
-    }, 500);
+    } catch (e) {
+      console.error("Failed to save:", e);
+      alert("فشل حفظ الإعدادات");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const updateFormElement = (

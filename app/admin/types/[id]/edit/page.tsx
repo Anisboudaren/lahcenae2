@@ -7,18 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, X, Save, Image as ImageIcon } from "lucide-react";
-import {
-  getLicenseTypes,
-  saveLicenseType,
-  type LicenseType,
-} from "@/lib/admin-data";
+import { ArrowRight, X, Save, Image as ImageIcon, Upload, Loader2 } from "lucide-react";
+import { mapDbToLicenseType, type DbLicenseType } from "@/lib/db-mappers";
+import type { LicenseType } from "@/lib/admin-data";
+
+async function uploadImage(file: File, folder: string): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("folder", folder);
+  const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || "فشل رفع الصورة");
+  }
+  const { url } = await res.json();
+  if (!url) throw new Error("فشل رفع الصورة");
+  return url;
+}
 
 export default function EditTypePage() {
   const router = useRouter();
   const params = useParams();
   const typeId = params.id as string;
-  
+
   const [formData, setFormData] = useState<Partial<LicenseType>>({
     code: "",
     nameAr: "",
@@ -34,57 +45,135 @@ export default function EditTypePage() {
   });
   const [detailInput, setDetailInput] = useState("");
   const [offerInput, setOfferInput] = useState("");
-  const [extraImageInput, setExtraImageInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingExtra, setUploadingExtra] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const types = getLicenseTypes();
-    const type = types.find((t) => t.id === typeId);
-    if (type) {
-      setFormData(type);
-    } else if (typeId === "new") {
-      // New type
-      setFormData({
-        code: "",
-        nameAr: "",
-        nameFr: "",
-        description: "",
-        imagePath: "",
-        details: [],
-        offers: [],
-        callToAction: "",
-        videoLink: "",
-        extraImages: [],
-        text: "",
-      });
-    }
-    setIsLoading(false);
+    loadType();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeId]);
 
-  const handleSave = () => {
-    if (!formData.code || !formData.nameAr || !formData.nameFr) {
-      alert("يرجى ملء الحقول المطلوبة");
+  async function loadType() {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await fetch("/api/admin/license-types");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data: DbLicenseType[] = await res.json();
+      if (typeId === "new") {
+        setFormData({
+          code: "",
+          nameAr: "",
+          nameFr: "",
+          description: "",
+          imagePath: "",
+          details: [],
+          offers: [],
+          callToAction: "",
+          videoLink: "",
+          extraImages: [],
+          text: "",
+        });
+      } else {
+        const row = data.find((t) => t.id === typeId);
+        if (row) setFormData(mapDbToLicenseType(row));
+        else setError("الصنف غير موجود");
+      }
+    } catch (e) {
+      setError("فشل تحميل البيانات");
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleMainImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingMain(true);
+      const url = await uploadImage(file, "types");
+      setFormData({ ...formData, imagePath: url });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "فشل رفع الصورة");
+    } finally {
+      setUploadingMain(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleExtraImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingExtra(true);
+      const url = await uploadImage(file, "types");
+      setFormData({
+        ...formData,
+        extraImages: [...(formData.extraImages || []), url],
+      });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "فشل رفع الصورة");
+    } finally {
+      setUploadingExtra(false);
+      e.target.value = "";
+    }
+  }
+
+  const handleSave = async () => {
+    if (!formData.code?.trim() || !formData.nameAr?.trim() || !formData.nameFr?.trim()) {
+      alert("يرجى ملء الحقول المطلوبة (الكود، الاسم بالعربية، الاسم بالفرنسية)");
       return;
     }
 
-    const typeToSave: LicenseType = {
-      id: typeId === "new" ? Date.now().toString() : typeId,
-      code: formData.code,
-      nameAr: formData.nameAr,
-      nameFr: formData.nameFr,
-      description: formData.description || "",
-      imagePath: formData.imagePath || "",
-      details: formData.details || [],
-      offers: formData.offers || [],
-      callToAction: formData.callToAction || "",
-      videoLink: formData.videoLink,
-      extraImages: formData.extraImages,
-      text: formData.text,
-      note: formData.note,
+    const payload = {
+      code: formData.code.trim(),
+      name_ar: formData.nameAr.trim(),
+      name_fr: formData.nameFr.trim(),
+      description: formData.description ?? "",
+      image_path: formData.imagePath ?? "",
+      details: formData.details ?? [],
+      offers: formData.offers ?? [],
+      call_to_action: formData.callToAction ?? "",
+      video_link: formData.videoLink?.trim() || null,
+      extra_images: formData.extraImages ?? [],
+      text: formData.text ?? null,
+      note: formData.note ?? null,
     };
 
-    saveLicenseType(typeToSave);
-    router.push("/admin/dashboard?tab=types");
+    try {
+      setIsSaving(true);
+      setError(null);
+      if (typeId === "new") {
+        const res = await fetch("/api/admin/license-types", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || "فشل الحفظ");
+        }
+      } else {
+        const res = await fetch("/api/admin/license-types", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || "فشل الحفظ");
+        }
+      }
+      router.push("/admin/dashboard?tab=types");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "فشل الحفظ");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const addDetail = () => {
@@ -121,16 +210,6 @@ export default function EditTypePage() {
     });
   };
 
-  const addExtraImage = () => {
-    if (extraImageInput.trim()) {
-      setFormData({
-        ...formData,
-        extraImages: [...(formData.extraImages || []), extraImageInput.trim()],
-      });
-      setExtraImageInput("");
-    }
-  };
-
   const removeExtraImage = (index: number) => {
     setFormData({
       ...formData,
@@ -146,15 +225,24 @@ export default function EditTypePage() {
     );
   }
 
+  if (error && typeId !== "new" && !formData.code) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4" dir="rtl">
+        <p className="text-red-600">{error}</p>
+        <Button onClick={() => router.push("/admin/dashboard?tab=types")} variant="outline">
+          العودة
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white relative" dir="rtl">
-      {/* Light dotted pattern on one side (right for RTL) */}
       <div
         className="absolute top-0 right-0 w-48 md:w-64 lg:w-80 h-full bg-dotted-pattern opacity-50 pointer-events-none"
         aria-hidden
       />
 
-      {/* Header */}
       <header className="relative bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -178,10 +266,11 @@ export default function EditTypePage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="relative container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm">{error}</div>
+        )}
         <div className="space-y-6">
-          {/* Basic Information */}
           <Card className="bg-white border-gray-200">
             <CardHeader>
               <CardTitle className="text-[#57534E]">المعلومات الأساسية</CardTitle>
@@ -222,39 +311,34 @@ export default function EditTypePage() {
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[#57534E]">مسار الصورة الرئيسية</Label>
+                <Label className="text-[#57534E]">الصورة الرئيسية</Label>
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <div className="w-full sm:w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
                     {formData.imagePath ? (
-                      <div className="relative w-full h-full">
-                        <img
-                          src={formData.imagePath}
-                          alt="Type image preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Show placeholder on error
-                            const parent = (e.target as HTMLImageElement).parentElement;
-                            if (parent) {
-                              parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
-                            }
-                          }}
-                        />
-                      </div>
+                      <img
+                        src={formData.imagePath}
+                        alt="معاينة"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : uploadingMain ? (
+                      <Loader2 className="w-10 h-10 animate-spin text-gray-400" />
                     ) : (
                       <ImageIcon className="w-12 h-12 text-gray-400" />
                     )}
                   </div>
                   <div className="flex-1 w-full">
-                    <Input
-                      value={formData.imagePath}
-                      onChange={(e) => setFormData({ ...formData, imagePath: e.target.value })}
-                      placeholder="/types/categorie A.jpg"
-                      dir="rtl"
-                      className="bg-white"
-                    />
-                    <p className="text-xs text-[#78716C] mt-2">
-                      أدخل مسار الصورة من مجلد public
-                    </p>
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white cursor-pointer text-sm font-medium">
+                      <Upload className="w-4 h-4" />
+                      {formData.imagePath ? "استبدال الصورة" : "رفع صورة"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleMainImageChange}
+                        disabled={uploadingMain}
+                      />
+                    </label>
+                    <p className="text-xs text-[#78716C] mt-2">PNG, JPG, WebP أو AVIF. يتم التحويل تلقائياً.</p>
                   </div>
                 </div>
               </div>
@@ -273,7 +357,6 @@ export default function EditTypePage() {
             </CardContent>
           </Card>
 
-          {/* Media */}
           <Card className="bg-white border-gray-200">
             <CardHeader>
               <CardTitle className="text-[#57534E]">الوسائط</CardTitle>
@@ -289,6 +372,7 @@ export default function EditTypePage() {
                   dir="rtl"
                   className="bg-white"
                 />
+                <p className="text-xs text-[#78716C] mt-1">أدخل الرابط فقط (مثال: YouTube embed)</p>
               </div>
 
               <div>
@@ -304,24 +388,30 @@ export default function EditTypePage() {
               </div>
 
               <div>
-                <Label className="text-[#57534E]">الصور الإضافية</Label>
-                <div className="flex gap-2 mb-2">
-                  <Input
-                    value={extraImageInput}
-                    onChange={(e) => setExtraImageInput(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addExtraImage())}
-                    placeholder="/images/extra-image.jpg"
-                    dir="rtl"
-                    className="bg-white"
-                  />
-                  <Button type="button" onClick={addExtraImage} className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white">
-                    إضافة
-                  </Button>
+                <Label className="text-[#57534E]">صور إضافية</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white cursor-pointer text-sm font-medium">
+                    <Upload className="w-4 h-4" />
+                    {uploadingExtra ? "جاري الرفع..." : "رفع صورة"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleExtraImageChange}
+                      disabled={uploadingExtra}
+                    />
+                  </label>
                 </div>
                 <div className="space-y-2">
-                  {formData.extraImages?.map((img, index) => (
-                    <div key={index} className="flex items-center gap-2 bg-white border border-gray-200 p-2 rounded">
-                      <span className="flex-1 text-right text-sm text-[#57534E]">{img}</span>
+                  {formData.extraImages?.map((url, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-white border border-gray-200 p-2 rounded"
+                    >
+                      <img src={url} alt="" className="w-12 h-12 object-cover rounded" />
+                      <span className="flex-1 text-right text-sm text-[#57534E] truncate max-w-[200px]">
+                        صورة {index + 1}
+                      </span>
                       <Button
                         type="button"
                         variant="ghost"
@@ -338,7 +428,6 @@ export default function EditTypePage() {
             </CardContent>
           </Card>
 
-          {/* Details */}
           <Card className="bg-white border-gray-200">
             <CardHeader>
               <CardTitle className="text-[#57534E]">التفاصيل</CardTitle>
@@ -360,7 +449,10 @@ export default function EditTypePage() {
               </div>
               <div className="space-y-2">
                 {formData.details?.map((detail, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-white border border-gray-200 p-2 rounded">
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-white border border-gray-200 p-2 rounded"
+                  >
                     <span className="flex-1 text-right text-[#57534E]">{detail}</span>
                     <Button
                       type="button"
@@ -377,7 +469,6 @@ export default function EditTypePage() {
             </CardContent>
           </Card>
 
-          {/* Offers */}
           <Card className="bg-white border-gray-200">
             <CardHeader>
               <CardTitle className="text-[#57534E]">العروض</CardTitle>
@@ -399,7 +490,10 @@ export default function EditTypePage() {
               </div>
               <div className="space-y-2">
                 {formData.offers?.map((offer, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-white border border-gray-200 p-2 rounded">
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-white border border-gray-200 p-2 rounded"
+                  >
                     <span className="flex-1 text-right text-[#57534E]">{offer}</span>
                     <Button
                       type="button"
@@ -416,7 +510,6 @@ export default function EditTypePage() {
             </CardContent>
           </Card>
 
-          {/* Call to Action & Note */}
           <Card className="bg-white border-gray-200">
             <CardHeader>
               <CardTitle className="text-[#57534E]">دعوة للعمل وملاحظات</CardTitle>
@@ -434,7 +527,6 @@ export default function EditTypePage() {
                   className="bg-white"
                 />
               </div>
-
               <div>
                 <Label className="text-[#57534E]">ملاحظة (اختياري)</Label>
                 <Textarea
@@ -449,7 +541,6 @@ export default function EditTypePage() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
           <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
             <Button
               variant="outline"
@@ -458,8 +549,12 @@ export default function EditTypePage() {
             >
               إلغاء
             </Button>
-            <Button onClick={handleSave} className="bg-[#DC2626] hover:bg-[#B91C1C] text-white">
-              <Save className="w-4 h-4 ml-2" />
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="bg-[#DC2626] hover:bg-[#B91C1C] text-white"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Save className="w-4 h-4 ml-2" />}
               حفظ
             </Button>
           </div>

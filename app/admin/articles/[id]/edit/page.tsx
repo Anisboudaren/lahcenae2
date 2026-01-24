@@ -7,18 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Save, Image as ImageIcon } from "lucide-react";
-import {
-  getArticles,
-  saveArticle,
-  type Article,
-} from "@/lib/admin-data";
+import { ArrowRight, Save, Image as ImageIcon, Upload, Loader2 } from "lucide-react";
+import { mapDbToArticle, type DbArticle } from "@/lib/db-mappers";
+import type { Article } from "@/lib/admin-data";
 
 function generateSlug(title: string) {
   return title
     .toLowerCase()
     .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+async function uploadImage(file: File, folder: string): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("folder", folder);
+  const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || "فشل رفع الصورة");
+  }
+  const { url } = await res.json();
+  if (!url) throw new Error("فشل رفع الصورة");
+  return url;
 }
 
 export default function EditArticlePage() {
@@ -35,46 +46,104 @@ export default function EditArticlePage() {
     text: "",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const articles = getArticles();
-    const article = articles.find((a) => a.id === articleId);
-    if (article) {
-      setFormData(article);
-    } else if (articleId === "new") {
-      setFormData({
-        title: "",
-        description: "",
-        image: "",
-        slug: "",
-        videoLink: "",
-        text: "",
-      });
-    }
-    setIsLoading(false);
+    loadArticle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleId]);
 
-  const handleSave = () => {
-    if (!formData.title || !formData.description || !formData.slug) {
+  async function loadArticle() {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await fetch("/api/admin/articles");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data: DbArticle[] = await res.json();
+      if (articleId === "new") {
+        setFormData({
+          title: "",
+          description: "",
+          image: "",
+          slug: "",
+          videoLink: "",
+          text: "",
+        });
+      } else {
+        const row = data.find((a) => a.id === articleId);
+        if (row) setFormData(mapDbToArticle(row));
+        else setError("المقال غير موجود");
+      }
+    } catch (e) {
+      setError("فشل تحميل البيانات");
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingImage(true);
+      const url = await uploadImage(file, "articles");
+      setFormData({ ...formData, image: url });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "فشل رفع الصورة");
+    } finally {
+      setUploadingImage(false);
+      e.target.value = "";
+    }
+  }
+
+  const handleSave = async () => {
+    if (!formData.title?.trim() || !formData.description?.trim() || !formData.slug?.trim()) {
       alert("يرجى ملء الحقول المطلوبة (العنوان، الوصف، الرابط المختصر)");
       return;
     }
 
-    const existing = articleId !== "new" && "createdAt" in formData && formData.createdAt;
-    const articleToSave: Article = {
-      id: articleId === "new" ? Date.now().toString() : articleId,
-      title: formData.title,
-      description: formData.description,
-      image: formData.image || "",
-      slug: formData.slug,
-      videoLink: formData.videoLink,
-      text: formData.text || "",
-      createdAt: typeof existing === "string" ? existing : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const payload = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      image: formData.image ?? "",
+      slug: formData.slug.trim(),
+      video_link: formData.videoLink?.trim() || null,
+      text: formData.text ?? "",
     };
 
-    saveArticle(articleToSave);
-    router.push("/admin/dashboard?tab=articles");
+    try {
+      setIsSaving(true);
+      setError(null);
+      if (articleId === "new") {
+        const res = await fetch("/api/admin/articles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || "فشل الحفظ");
+        }
+      } else {
+        const res = await fetch("/api/admin/articles", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || "فشل الحفظ");
+        }
+      }
+      router.push("/admin/dashboard?tab=articles");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "فشل الحفظ");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleTitleChange = (title: string) => {
@@ -89,6 +158,17 @@ export default function EditArticlePage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center" dir="rtl">
         <p className="text-[#57534E]">جاري التحميل...</p>
+      </div>
+    );
+  }
+
+  if (error && articleId !== "new" && !formData.title) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4" dir="rtl">
+        <p className="text-red-600">{error}</p>
+        <Button onClick={() => router.push("/admin/dashboard?tab=articles")} variant="outline">
+          العودة
+        </Button>
       </div>
     );
   }
@@ -126,6 +206,9 @@ export default function EditArticlePage() {
       </header>
 
       <main className="relative container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm">{error}</div>
+        )}
         <div className="space-y-6">
           <Card className="bg-white border-gray-200">
             <CardHeader>
@@ -181,41 +264,34 @@ export default function EditArticlePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <Label className="text-[#57534E]">مسار صورة الغلاف</Label>
+                <Label className="text-[#57534E]">صورة الغلاف</Label>
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <div className="w-full sm:w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
                     {formData.image ? (
-                      <div className="relative w-full h-full">
-                        <img
-                          src={formData.image}
-                          alt="Article cover preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Show placeholder on error
-                            const parent = (e.target as HTMLImageElement).parentElement;
-                            if (parent) {
-                              parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
-                            }
-                          }}
-                        />
-                      </div>
+                      <img
+                        src={formData.image}
+                        alt="معاينة"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : uploadingImage ? (
+                      <Loader2 className="w-10 h-10 animate-spin text-gray-400" />
                     ) : (
                       <ImageIcon className="w-12 h-12 text-gray-400" />
                     )}
                   </div>
                   <div className="flex-1 w-full">
-                    <Input
-                      value={formData.image}
-                      onChange={(e) =>
-                        setFormData({ ...formData, image: e.target.value })
-                      }
-                      placeholder="/articles/article-image.jpg"
-                      dir="rtl"
-                      className="bg-white"
-                    />
-                    <p className="text-xs text-[#78716C] mt-2">
-                      أدخل مسار الصورة من مجلد public
-                    </p>
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white cursor-pointer text-sm font-medium">
+                      <Upload className="w-4 h-4" />
+                      {formData.image ? "استبدال الصورة" : "رفع صورة"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        disabled={uploadingImage}
+                      />
+                    </label>
+                    <p className="text-xs text-[#78716C] mt-2">PNG, JPG, WebP أو AVIF. يتم التحويل تلقائياً.</p>
                   </div>
                 </div>
               </div>
@@ -226,10 +302,13 @@ export default function EditArticlePage() {
                   onChange={(e) =>
                     setFormData({ ...formData, videoLink: e.target.value })
                   }
-                  placeholder="https://www.youtube.com/embed/..."
+                  placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..."
                   dir="rtl"
                   className="bg-white"
                 />
+                <p className="text-xs text-[#78716C] mt-1">
+                  يمكنك إدخال رابط YouTube العادي (سيتم تحويله تلقائياً) أو رابط embed
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -265,9 +344,10 @@ export default function EditArticlePage() {
             </Button>
             <Button
               onClick={handleSave}
+              disabled={isSaving}
               className="w-full sm:w-auto bg-[#DC2626] hover:bg-[#B91C1C] text-white"
             >
-              <Save className="w-4 h-4 ml-2 shrink-0" />
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin ml-2 shrink-0" /> : <Save className="w-4 h-4 ml-2 shrink-0" />}
               حفظ
             </Button>
           </div>
