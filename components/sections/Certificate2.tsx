@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 export function Certificate2() {
   return (
     <section 
+      id="certificate"
       className="relative w-full py-12 md:py-16 lg:py-20 px-6 md:px-12 lg:px-16 xl:px-20"
       style={{
         background: 'linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%)',

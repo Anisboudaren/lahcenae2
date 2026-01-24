@@ -138,6 +138,13 @@ export function MultiStepForm({ open, onOpenChange }: MultiStepFormProps) {
 
   const onSubmit = (data: InscriptionFormData) => {
     console.log("Form data:", data);
+    // Save to admin data storage
+    try {
+      const { saveFormSubmission } = require("@/lib/admin-data");
+      saveFormSubmission(data);
+    } catch (error) {
+      console.error("Error saving form submission:", error);
+    }
     setShowSuccess(true);
     setTimeout(() => {
       setShowSuccess(false);

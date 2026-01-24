@@ -1,115 +1,69 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-
-const articlesData: Record<string, {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  slug: string;
-  videoUrl?: string;
-  content: string[];
-  author: string;
-  date: string;
-  readTime: string;
-}> = {
-  "first-driving-lesson": {
-    id: 1,
-    title: "أول حصة في السياقة: أهم درس وتمرين للمبتدئين",
-    description: "دليل شامل للمبتدئين في أول حصة قيادة - تعرف على الأساسيات والتمارين المهمة التي يجب إتقانها",
-    image: "/articles/teaching inside the car.png",
-    slug: "first-driving-lesson",
-    videoUrl: "https://www.youtube.com/watch?v=Ts3uwRAOiJw",
-    content: [
-      "أول حصة قيادة هي خطوة مهمة في رحلتك نحو الحصول على رخصة القيادة. في هذه المقالة، سنستعرض أهم الدروس والتمارين التي ستتعلمها في حصتك الأولى.",
-      "في البداية، سيقوم المدرب بشرح أساسيات المركبة وأجزائها الرئيسية. ستعرف على دواسة البنزين، دواسة الفرامل، دواسة القابض (الدبرياج)، ومقبض ناقل الحركة. هذه المعرفة الأساسية ضرورية قبل البدء في القيادة الفعلية.",
-      "التمرين الأول الذي ستقوم به هو التعرف على وضعية الجلوس الصحيحة. يجب أن تكون مريحاً وأن يكون ظهرك مستقيماً، وأن تصل بسهولة إلى جميع الأدوات. المسافة بينك وبين عجلة القيادة يجب أن تكون مناسبة بحيث يمكنك تحريك عجلة القيادة بسهولة.",
-      "بعد ذلك، ستبدأ بالتمرين على تشغيل المحرك وإيقافه. ستعلم كيفية استخدام المفتاح بشكل صحيح، وكيفية التحقق من أن جميع الأنوار والأجهزة تعمل بشكل صحيح قبل البدء في القيادة.",
-      "التمرين التالي هو التعرف على ناقل الحركة. ستعلم الفرق بين التروس المختلفة (الأول، الثاني، الثالث، الرابع، الخامس، والرجوع للخلف). سيقوم المدرب بشرح متى وكيف تستخدم كل ترس.",
-      "أحد أهم التمارين في الحصة الأولى هو التعلم على استخدام القابض (الدبرياج) بشكل صحيح. هذا هو الجزء الأصعب للمبتدئين، ولكن مع الممارسة ستصبح طبيعياً. ستعلم كيفية رفع القابض ببطء أثناء الضغط على دواسة البنزين.",
-      "بعد إتقان الأساسيات، ستبدأ بالقيادة الفعلية في منطقة آمنة ومغلقة. ستعلم كيفية التحرك ببطء، والتوقف بشكل صحيح، والانعطاف. المدرب سيكون بجانبك دائماً لمساعدتك وتوجيهك.",
-      "من المهم أن تتذكر أن القيادة مهارة تحتاج إلى الصبر والممارسة. لا تشعر بالإحباط إذا لم تكن قيادتك مثالية من البداية. كل سائق محترف كان في يوم من الأيام مبتدئاً مثلك.",
-      "في نهاية الحصة الأولى، ستحصل على ملاحظات من المدرب حول أدائك. هذه الملاحظات مهمة جداً وستساعدك على التحسن في الحصص القادمة. تأكد من الاستماع جيداً وتطبيق النصائح التي يقدمها لك المدرب.",
-      "تذكر دائماً أن السلامة هي الأولوية القصوى. اتبع تعليمات المدرب بدقة، ولا تتعجل في تعلم القيادة. مع الوقت والصبر، ستصبح سائقاً محترفاً وواثقاً."
-    ],
-    author: "مدرسة لحسن لتعليم السياقة",
-    date: "15 يناير 2026",
-    readTime: "8 دقائق"
-  },
-  "getting-license-at-18": {
-    id: 2,
-    title: "كل ما تحتاج معرفته للحصول على رخصة القيادة في سن 18",
-    description: "دليل كامل للشباب الذين بلغوا 18 عاماً - المتطلبات، الخطوات، والنصائح المهمة",
-    image: "/articles/guy wiht the car.png",
-    slug: "getting-license-at-18",
-    content: [
-      "بلوغ سن 18 عاماً هو اللحظة المثالية للحصول على رخصة القيادة. في هذا الدليل الشامل، سنستعرض كل ما تحتاج معرفته للحصول على رخصتك الأولى.",
-      "الخطوة الأولى هي التأكد من استيفاء جميع المتطلبات القانونية. يجب أن تكون قد بلغت 18 عاماً، وأن تكون لديك بطاقة تعريف وطنية سارية المفعول. كما يجب أن تكون لائقاً طبياً للحصول على رخصة القيادة.",
-      "بعد ذلك، ستحتاج إلى الحصول على شهادة طبية من طبيب معتمد. هذه الشهادة تثبت أنك لائق طبياً للقيادة. يجب أن تشمل فحص النظر والسمع والصحة العامة.",
-      "الخطوة التالية هي التسجيل في مدرسة تعليم السياقة معتمدة. في مدرسة لحسن، نقدم برامج تدريبية شاملة للمبتدئين. ستحتاج إلى إكمال عدد معين من الحصص النظرية والعملية قبل التقدم للامتحان.",
-      "الحصص النظرية تغطي مواضيع مهمة مثل قواعد المرور، علامات الطريق، أولويات المرور، والسلامة الطرقية. هذه المعرفة ضرورية ليس فقط لاجتياز الامتحان، ولكن أيضاً لقيادة آمنة على الطرق.",
-      "الحصص العملية تمكنك من تطبيق ما تعلمته نظرياً. ستبدأ بالقيادة في مناطق آمنة، ثم ستنتقل تدريجياً إلى القيادة في الشوارع والطرق الرئيسية. المدربون المحترفون سيرافقونك في كل خطوة.",
-      "بعد إكمال جميع الحصص المطلوبة، ستحتاج إلى التقدم للامتحان النظري. هذا الامتحان يتكون من أسئلة متعددة الخيارات حول قواعد المرور والسلامة. يجب أن تحصل على درجة النجاح المطلوبة.",
-      "بعد النجاح في الامتحان النظري، ستتقدم للامتحان العملي. في هذا الامتحان، سيقوم الممتحن بتقييم قدرتك على القيادة بشكل آمن وصحيح. يجب أن تظهر ثقتك ومهارتك في القيادة.",
-      "بعد النجاح في كلا الامتحانين، ستحصل على رخصة القيادة المؤقتة. هذه الرخصة صالحة لمدة معينة، وبعدها يمكنك الحصول على الرخصة الدائمة.",
-      "تذكر أن الحصول على رخصة القيادة هو مجرد البداية. القيادة الآمنة تتطلب الممارسة المستمرة والالتزام بقواعد المرور. كن دائماً حذراً ومتيقظاً أثناء القيادة."
-    ],
-    author: "مدرسة لحسن لتعليم السياقة",
-    date: "10 يناير 2026",
-    readTime: "10 دقائق"
-  },
-  "new-traffic-laws-2026": {
-    id: 3,
-    title: "قوانين المرور الجديدة 2026 في الجزائر: ما الذي تغير؟",
-    description: "تعرف على آخر التحديثات والتغييرات في قانون المرور الجزائري لعام 2026 وأهم النقاط",
-    image: "/articles/new laws.jpg",
-    slug: "new-traffic-laws-2026",
-    content: [
-      "شهد عام 2026 تحديثات مهمة في قوانين المرور الجزائرية. في هذه المقالة، سنستعرض أهم التغييرات التي يجب على جميع السائقين معرفتها.",
-      "أحد أهم التغييرات هو زيادة العقوبات على مخالفات السرعة. تم رفع الغرامات المالية بشكل كبير، كما تم تشديد العقوبات على السائقين الذين يتجاوزون السرعة المسموحة بشكل كبير.",
-      "تغيير مهم آخر يتعلق باستخدام الهاتف المحمول أثناء القيادة. أصبح استخدام الهاتف بدون نظام التحدث بدون استخدام اليدين محظوراً تماماً، والعقوبة أصبحت أكثر صرامة.",
-      "تم أيضاً تحديث قواعد ربط حزام الأمان. أصبح ربط حزام الأمان إلزامياً لجميع الركاب، وليس فقط السائق والركاب في المقاعد الأمامية. هذا التغيير يهدف إلى زيادة السلامة على الطرق.",
-      "قوانين جديدة تم إدخالها تتعلق بالقيادة تحت تأثير الكحول. تم خفض الحد المسموح به من الكحول في الدم، وأصبحت العقوبات أكثر صرامة. من المهم جداً عدم القيادة بعد شرب الكحول.",
-      "تم تحديث قواعد إعطاء الأولوية في التقاطعات. أصبحت القواعد أكثر وضوحاً، مع إضافة علامات جديدة على الطرق لتوضيح أولويات المرور.",
-      "تغيير مهم آخر يتعلق برخص القيادة. تم تحديث متطلبات التجديد، وأصبحت الفحوصات الطبية أكثر صرامة. يجب على السائقين التأكد من أن رخصهم سارية المفعول.",
-      "تم إدخال قواعد جديدة تتعلق بالدراجات النارية. أصبح ارتداء الخوذة إلزامياً لجميع راكبي الدراجات النارية، بغض النظر عن نوع الرخصة.",
-      "قوانين جديدة تم إدخالها تتعلق بالمركبات الكهربائية. مع زيادة عدد المركبات الكهربائية على الطرق، تم إدخال قواعد خاصة بهذه المركبات.",
-      "من المهم جداً أن يطلع جميع السائقين على هذه التغييرات. الالتزام بقوانين المرور ليس فقط ضرورياً لتجنب الغرامات، ولكن أيضاً لضمان السلامة على الطرق."
-    ],
-    author: "مدرسة لحسن لتعليم السياقة",
-    date: "5 يناير 2026",
-    readTime: "12 دقيقة"
-  }
-};
+import { getArticles, type Article } from "@/lib/admin-data";
 
 export default function ArticlePage() {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
-  const article = articlesData[slug];
+  const [article, setArticle] = useState<Article | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const articles = getArticles();
+    const foundArticle = articles.find((a) => a.slug === slug);
+    if (foundArticle) {
+      setArticle(foundArticle);
+    } else {
+      router.push("/articles");
+    }
+    setIsLoading(false);
+  }, [slug, router]);
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-[#57534E]">جاري التحميل...</p>
+      </main>
+    );
+  }
 
   if (!article) {
-    router.push('/');
     return null;
   }
+
+  // Calculate read time based on text length (approximate)
+  const calculateReadTime = (text: string): string => {
+    const wordsPerMinute = 200;
+    const words = text.split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return `${minutes} دقيقة`;
+  };
+
+  const readTime = calculateReadTime(article.text);
 
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section with Image */}
       <section className="relative w-full">
         <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
-          <Image
-            src={article.image}
-            alt={article.title}
-            fill
-            className="object-cover"
-            priority
-          />
+          {article.image ? (
+            <Image
+              src={article.image}
+              alt={article.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
           <div className="absolute inset-0 flex items-end">
             <div className="container mx-auto max-w-7xl px-6 md:px-12 lg:px-16 xl:px-20 pb-12">
@@ -122,14 +76,20 @@ export default function ArticlePage() {
               <div className="flex flex-wrap items-center gap-4 text-white/80 text-sm">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>{article.date}</span>
+                  <span>
+                    {new Date(article.createdAt).toLocaleDateString("ar-DZ", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  <span>{article.readTime} قراءة</span>
+                  <span>{readTime} قراءة</span>
                 </div>
                 <div>
-                  <span>بواسطة {article.author}</span>
+                  <span>بواسطة مدرسة لحسن لتعليم السياقة</span>
                 </div>
               </div>
             </div>
@@ -140,17 +100,27 @@ export default function ArticlePage() {
       {/* Main Content */}
       <section className="py-12 md:py-16 lg:py-20 px-6 md:px-12 lg:px-16 xl:px-20">
         <div className="container mx-auto max-w-4xl">
-          
+          {/* Back to Articles Link */}
+          <div className="mb-8">
+            <Link
+              href="/articles"
+              className="inline-flex items-center gap-2 text-[#0EA5E9] hover:text-[#0284C7] transition-colors"
+            >
+              <ArrowRight className="w-4 h-4" />
+              <span>العودة إلى المقالات</span>
+            </Link>
+          </div>
+
           {/* Video Section if available */}
-          {article.videoUrl && (
+          {article.videoLink && (
             <div className="mb-12">
               <div className="bg-gray-50 rounded-lg p-6 md:p-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-right">
+                <h2 className="text-2xl md:text-3xl font-bold text-[#57534E] mb-6 text-right">
                   فيديو تعليمي
                 </h2>
                 <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg">
                   <iframe
-                    src={article.videoUrl.replace('watch?v=', 'embed/')}
+                    src={article.videoLink}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
@@ -167,14 +137,18 @@ export default function ArticlePage() {
           {/* Article Content */}
           <div className="prose prose-lg max-w-none">
             <div className="space-y-6 text-right">
-              {article.content.map((paragraph, index) => (
-                <p key={index} className="text-lg text-gray-700 leading-relaxed">
-                  {paragraph}
-                </p>
-              ))}
+              {article.text ? (
+                <div
+                  className="text-lg text-[#57534E] leading-relaxed whitespace-pre-line"
+                  dangerouslySetInnerHTML={{
+                    __html: article.text.replace(/\n/g, "<br />"),
+                  }}
+                />
+              ) : (
+                <p className="text-lg text-[#78716C]">لا يوجد محتوى متاح</p>
+              )}
             </div>
           </div>
-
         </div>
       </section>
     </main>

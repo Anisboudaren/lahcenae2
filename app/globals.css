@@ -68,7 +68,7 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: #DC2626;
-  
+
   /* Custom color palette */
   --color-red-primary: #DC2626;
   --color-red-secondary: #B91C1C;
@@ -136,13 +136,13 @@
     @apply bg-background text-foreground;
     font-family: var(--font-cairo), sans-serif;
   }
-  
+
   /* RTL support */
   [dir="rtl"] {
     direction: rtl;
     text-align: right;
   }
-  
+
   /* Geometric pattern background utility */
   .bg-pattern {
     background-image: url('/images/geometric Islamic design warm beige and soft red color.png');
@@ -151,7 +151,13 @@
     background-repeat: no-repeat;
     opacity: 0.05;
   }
-  
+
+  /* Light dotted pattern (sky blue) - home page style */
+  .bg-dotted-pattern {
+    background-image: radial-gradient(circle, rgba(14, 165, 233, 0.12) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+  }
+
   /* Smooth scroll */
   html {
     scroll-behavior: smooth;

@@ -195,7 +195,7 @@ export function Categories2() {
   const category = selectedCategory ? categories.find(c => c.code === selectedCategory) : null;
   const details = selectedCategory ? licenseDetails[selectedCategory] : null;
   return (
-    <section className="relative w-full bg-white py-12 md:py-16 lg:py-20 px-6 md:px-12 lg:px-16 xl:px-20">
+    <section id="categories" className="relative w-full bg-white py-12 md:py-16 lg:py-20 px-6 md:px-12 lg:px-16 xl:px-20">
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-10 md:mb-12">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">

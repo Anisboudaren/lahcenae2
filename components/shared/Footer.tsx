@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Facebook, FileText, UserPlus, Newspaper } from "lucide-react";
+import { Phone, MessageCircle, Facebook, FileText, Newspaper } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
@@ -86,15 +86,6 @@ export function Footer() {
                 <ul className="space-y-3">
                   <li>
                     <Link
-                      href="/signup"
-                      className="text-gray-400 hover:text-sky-400 transition-colors font-medium flex items-center gap-2 text-sm"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      سجل الآن
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
                       href="/articles"
                       className="text-gray-400 hover:text-sky-400 transition-colors flex items-center gap-2 text-sm"
                     >
@@ -108,7 +99,7 @@ export function Footer() {
                       className="text-gray-400 hover:text-sky-400 transition-colors flex items-center gap-2 text-sm"
                     >
                       <FileText className="w-4 h-4" />
-                      السياسات
+                      السياسات والشروط
                     </Link>
                   </li>
                 </ul>

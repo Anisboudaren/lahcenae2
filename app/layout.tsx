@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Cairo, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
-import { Header2 } from "@/components/shared/Header2";
-import { Footer } from "@/components/shared/Footer";
 import { FormProvider } from "@/contexts/FormContext";
-import { WhatsAppBubble } from "@/components/shared/WhatsAppBubble";
+import { ConditionalLayout } from "@/components/shared/ConditionalLayout";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -40,10 +38,7 @@ export default function RootLayout({
         className={`${cairo.variable} ${montserrat.variable} ${inter.variable} antialiased`}
       >
         <FormProvider>
-          <Header2 />
-          {children}
-          <Footer />
-          <WhatsAppBubble />
+          <ConditionalLayout>{children}</ConditionalLayout>
         </FormProvider>
       </body>
     </html>

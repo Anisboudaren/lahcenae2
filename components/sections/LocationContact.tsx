@@ -19,7 +19,7 @@ const locations = [
 
 export function LocationContact() {
   return (
-    <section className="relative w-full bg-white py-12 md:py-16 lg:py-20 px-6 md:px-12 lg:px-16 xl:px-20">
+    <section id="locations" className="relative w-full bg-white py-12 md:py-16 lg:py-20 px-6 md:px-12 lg:px-16 xl:px-20">
       <div className="container mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-right mb-10 md:mb-12">

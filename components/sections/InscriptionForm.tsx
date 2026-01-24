@@ -90,7 +90,13 @@ export function InscriptionForm() {
 
   const onSubmit = (data: InscriptionFormData) => {
     console.log("Form data:", data);
-    // In a real app, this would submit to an API
+    // Save to admin data storage
+    try {
+      const { saveFormSubmission } = require("@/lib/admin-data");
+      saveFormSubmission(data);
+    } catch (error) {
+      console.error("Error saving form submission:", error);
+    }
     setShowSuccess(true);
     form.reset();
     setTimeout(() => setShowSuccess(false), 5000);
