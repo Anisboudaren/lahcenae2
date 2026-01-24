@@ -62,15 +62,15 @@ export function SettingsPage() {
     fieldKey: FormFieldKey,
     updates: Partial<SiteSettings["formElements"][string]>
   ) => {
+    const existingField = settings.formElements[fieldKey] || {};
     setSettings({
       ...settings,
       formElements: {
         ...settings.formElements,
         [fieldKey]: {
-          label: formFieldLabels[fieldKey].ar,
-          required: inscriptionFormSchema.shape[fieldKey] ? true : false,
-          visible: true,
-          ...settings.formElements[fieldKey],
+          label: existingField.label || formFieldLabels[fieldKey].ar,
+          required: existingField.required ?? (inscriptionFormSchema.shape[fieldKey] ? true : false),
+          visible: existingField.visible ?? true,
           ...updates,
         },
       },
