@@ -6,7 +6,7 @@ import { Calendar, FileText, Award, CheckCircle, Phone, MessageCircle } from "lu
 import Link from "next/link";
 
 export default function CertificatePage() {
-  const phoneNumber = "0550496953";
+  const phoneNumber = "05 50 49 69 53";
   const whatsappNumber = "+213550496953";
 
   return (
@@ -272,7 +272,7 @@ export default function CertificatePage() {
               </Button>
               <div className="flex gap-4">
                 <a
-                  href={`tel:${phoneNumber}`}
+                  href="tel:05550496953"
                   className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Phone className="w-5 h-5" />

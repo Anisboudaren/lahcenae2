@@ -252,13 +252,13 @@ export default function PoliciesPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 text-[#0EA5E9]" />
-                    <a href="tel:0550496953" className="text-[#0EA5E9] hover:underline">
-                      0550496953
+                    <a href="tel:05550496953" className="text-[#0EA5E9] hover:underline">
+                      05 50 49 69 53
                     </a>
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-[#0EA5E9]" />
-                    <span className="text-[#78716C]">info@autoecolelahcen.dz</span>
+                    <a href="mailto:eurlloranie@gmail.com" className="text-[#0EA5E9] hover:underline">eurlloranie@gmail.com</a>
                   </div>
                 </div>
               </div>

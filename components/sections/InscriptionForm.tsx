@@ -503,7 +503,7 @@ export function InscriptionForm() {
                   <Phone className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-semibold text-gray-900">اتصل بنا</p>
-                    <p className="text-gray-700">0550496953</p>
+                    <p className="text-gray-700">05 50 49 69 53</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

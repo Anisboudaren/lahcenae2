@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Facebook, FileText, Newspaper } from "lucide-react";
+import { Phone, MessageCircle, Facebook, FileText, Newspaper, Mail } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
-  const phoneNumber = "0550496953";
+  const phoneNumber = "05 50 49 69 53";
   const whatsappNumber = "+213550496953";
   const facebookUrl = "https://www.facebook.com/share/1ACD1Lu8jV/";
 
@@ -53,11 +53,18 @@ export function Footer() {
                 <h3 className="text-lg font-bold text-white mb-4">معلومات الاتصال</h3>
                 <div className="space-y-3">
                   <a
-                    href={`tel:${phoneNumber}`}
+                    href="tel:05550496953"
                     className="flex items-center gap-3 text-gray-400 hover:text-sky-400 transition-colors text-sm"
                   >
                     <Phone className="w-4 h-4" />
                     <span>{phoneNumber}</span>
+                  </a>
+                  <a
+                    href="mailto:eurlloranie@gmail.com"
+                    className="flex items-center gap-3 text-gray-400 hover:text-sky-400 transition-colors text-sm"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>eurlloranie@gmail.com</span>
                   </a>
                   <a
                     href={`https://wa.me/${whatsappNumber.replace('+', '')}`}

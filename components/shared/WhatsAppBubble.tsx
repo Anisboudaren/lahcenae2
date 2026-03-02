@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function WhatsAppBubble() {
   // Replace with your actual WhatsApp number (format: country code + number without + or spaces)
-  const whatsappNumber = "213550123456"; // Example: Algeria country code + number
+  const whatsappNumber = "213550496953"; // Algeria: 05 50 49 69 53
   const whatsappMessage = "مرحباً، أريد الاستفسار عن دورات تعليم السياقة";
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
